@@ -18,12 +18,7 @@
 	{#if !form}
 		<main class="flex flex-col justify-center items-center flex-grow p-4">
 			<h2 class="text-2xl mb-6 text-gray-700 text-center">Get summaries of YouTube videos</h2>
-			<form
-				class="flex flex-col sm:flex-row gap-2"
-				method="post"
-				use:enhance
-				on:submit={handleSubmit}
-			>
+			<form class="flex flex-col sm:flex-row gap-2" method="post" on:submit={handleSubmit}>
 				<input
 					class="px-4 w-96 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:shadow-md"
 					type="text"
