@@ -31,10 +31,17 @@ export const actions = {
 	default: async ({ request }) => {
 		const data = await request.formData();
 		const url = data.get('url');
+		let id = '';
 
-		const youtubeUrl = new URL(url);
-		const params = new URLSearchParams(youtubeUrl.search);
-		const id = params.get('v');
+		if (url.includes('youtu.be')) {
+			id = url.split('/').pop().split('?')[0]; // Split on '/' and remove any query params
+		} else if (url.includes('youtube.com')) {
+			const youtubeUrl = new URL(url);
+			const params = new URLSearchParams(youtubeUrl.search);
+			id = params.get('v');
+		} else {
+			return { error: "Sorry! I don't know how to handle that URL" };
+		}
 
 		// Fetch the video transcript
 		const transcript = await fetchTranscript(id);
@@ -43,7 +50,7 @@ export const actions = {
 		const transcriptString = transcript.map((t) => t.text).join(' ');
 
 		// Run the summarizer
-		const summarizerResponse = await summarise(transcriptString);
+		const summary = await summarise(transcriptString);
 
 		// // Create parts of the transcript, where each part is no more than 4000 characters
 		// const parts = [];
@@ -68,7 +75,6 @@ export const actions = {
 		// 	parts.map((part) => run('@cf/meta/llama-2-7b-chat-int8', part))
 		// );
 
-		// Return the summarizer results
-		return { response: summarizerResponse };
+		return { summary };
 	}
 };

@@ -1,6 +1,6 @@
 <script>
-	import { enhance } from '$app/forms';
 	export let form;
+	$: form = form || { summary: false };
 
 	let isLoading = false;
 
@@ -15,7 +15,7 @@
 		<h1 class="text-lg font-bold">Media Summariser</h1>
 	</header>
 
-	{#if !form}
+	{#if !form.summary}
 		<main class="flex flex-col justify-center items-center flex-grow p-4">
 			<h2 class="text-2xl mb-6 text-gray-700 text-center">Get summaries of YouTube videos</h2>
 			<form class="flex flex-col sm:flex-row gap-2" method="post" on:submit={handleSubmit}>
@@ -25,7 +25,6 @@
 					placeholder="Paste YouTube URL here"
 					name="url"
 				/>
-
 				<button
 					type="submit"
 					class="px-4 py-2 rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-600 disabled:bg-gray-500"
@@ -34,12 +33,15 @@
 					Summarise
 				</button>
 			</form>
+			{#if form.error}
+				<p class="text-red-500 mt-2">{form.error}</p>
+			{/if}
 		</main>
 	{:else}
 		<main class="p-4">
 			<a class="text-blue-500 mb-4 block" href="/">← Summarise another video</a>
 			<h2 class="text-2xl mb-6 text-gray-700">Summary</h2>
-			<p>{form.response}</p>
+			<p>{form.summary}</p>
 			<!-- {#if form.responses}
 				{#each form.responses as response}
 					<p class="mb-2">{response}</p>
