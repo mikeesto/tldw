@@ -1,5 +1,21 @@
 import { fetchTranscript } from 'youtube-subtitle-transcript';
-import { ANYSCALE_KEY } from '$env/static/private';
+import { ANYSCALE_KEY, YOUTUBE_KEY } from '$env/static/private';
+import { iso8601ToSeconds } from '$lib';
+
+async function getVideoDetails(id) {
+	return fetch(
+		`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails&id=${id}&key=${YOUTUBE_KEY}`
+	)
+		.then((response) => response.json())
+		.then((data) => {
+			const video = data.items[0];
+			if (!video) return { error: 'Sorry! I could not find that video' };
+
+			const title = video.snippet.title;
+			const duration = iso8601ToSeconds(video.contentDetails.duration);
+			return { title, duration };
+		});
+}
 
 async function summarise(transcript) {
 	const requestOptions = {
@@ -43,38 +59,22 @@ export const actions = {
 			return { error: "Sorry! I don't know how to handle that URL" };
 		}
 
-		// Fetch the video transcript
+		const { title, duration, error } = await getVideoDetails(id);
+
+		if (error) return { error };
+
+		// Don't allow durations over 30 minutes
+		if (duration >= 1800) {
+			return { error: 'Sorry! I only support videos under 30 minutes long' };
+		}
+
 		const transcript = await fetchTranscript(id);
 
 		// Combine the transcript into a single string
 		const transcriptString = transcript.map((t) => t.text).join(' ');
 
-		// Run the summarizer
 		const summary = await summarise(transcriptString);
 
-		// // Create parts of the transcript, where each part is no more than 4000 characters
-		// const parts = [];
-		// let part = '';
-		// for (const word of splitTranscript) {
-		// 	if (part.length + word.length > 3500) {
-		// 		parts.push(part);
-		// 		part = '';
-		// 	}
-		// 	part += word + ' ';
-		// }
-
-		// // Push the last part into parts if it is not empty
-		// if (part.length > 0) {
-		// 	parts.push(part);
-		// }
-
-		// console.log('parts: ', parts.length);
-
-		// // Run each transcript bundle through the summarizer in parallel
-		// let responses = await Promise.all(
-		// 	parts.map((part) => run('@cf/meta/llama-2-7b-chat-int8', part))
-		// );
-
-		return { summary };
+		return { summary, title, id };
 	}
 };

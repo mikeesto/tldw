@@ -40,14 +40,14 @@
 	{:else}
 		<main class="p-4">
 			<a class="text-blue-500 mb-4 block" href="/">← Summarise another video</a>
-			<h2 class="text-2xl mb-6 text-gray-700">Summary</h2>
+			<h2 class="text-2xl mb-6 text-gray-700">
+				Summary for <a
+					class="text-blue-700"
+					target="_blank"
+					href={`https://youtube.com/watch?v=${form.id}`}>{form.title}</a
+				>
+			</h2>
 			<p>{form.summary}</p>
-			<!-- {#if form.responses}
-				{#each form.responses as response}
-					<p class="mb-2">{response}</p>
-				{/each}
-			{/if} -->
-			<!-- <p>{JSON.stringify(form.responses)}</p> -->
 		</main>
 	{/if}
 </div>
