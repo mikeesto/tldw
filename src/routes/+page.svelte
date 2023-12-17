@@ -12,12 +12,12 @@
 
 <div class="min-h-screen flex flex-col">
 	<header class="bg-gray-900 text-white py-4 px-4">
-		<h1 class="text-lg font-bold">Media Summariser</h1>
+		<h1 class="text-lg font-bold">YT Summariser</h1>
 	</header>
 
 	{#if !form.summary}
 		<main class="flex flex-col justify-center items-center flex-grow p-4">
-			<h2 class="text-2xl mb-6 text-gray-700 text-center">Get summaries of YouTube videos</h2>
+			<h2 class="text-2xl mb-6 text-gray-700 text-center">Summarise YouTube videos with AI</h2>
 			<form class="flex flex-col sm:flex-row gap-2" method="post" on:submit={handleSubmit}>
 				<input
 					class="px-4 w-96 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:shadow-md"
