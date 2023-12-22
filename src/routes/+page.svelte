@@ -17,7 +17,7 @@
 
 	{#if !form.summary}
 		<main class="flex flex-col justify-center items-center flex-grow p-4">
-			<h2 class="text-2xl mb-6 text-gray-700 text-center">Summarise YouTube videos with AI</h2>
+			<h1 class="text-2xl mb-6 text-gray-700 text-center">Summarise YouTube videos with AI</h1>
 			<form class="flex flex-col sm:flex-row gap-2" method="post" on:submit={handleSubmit}>
 				<input
 					class="px-4 w-96 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:shadow-md"
@@ -39,13 +39,11 @@
 		</main>
 	{:else}
 		<main class="p-4 flex-grow">
-			<h2 class="text-2xl mb-6 text-gray-700">
-				<a
-					class="text-blue-700 hover:underline"
-					target="_blank"
-					href={`https://youtube.com/watch?v=${form.id}`}>{form.title}</a
-				>
-			</h2>
+			<a
+				class="text-blue-700 hover:underline text-2xl mb-4 block"
+				target="_blank"
+				href={`https://youtube.com/watch?v=${form.id}`}>{form.title}</a
+			>
 			<p>{form.summary}</p>
 			<a
 				class="mt-5 inline-block bg-blue-500 hover:bg-blue-600 text-white py-2 px-2 rounded"
