@@ -28,6 +28,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"youtube-subtitle-transcript": "^0.0.2"
+		"youtube-subtitle-transcript": "^0.1.0"
 	}
 }

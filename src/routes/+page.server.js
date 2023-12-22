@@ -68,7 +68,11 @@ export const actions = {
 			return { error: 'Sorry! I only support videos under 30 minutes long' };
 		}
 
-		const transcript = await fetchTranscript(id);
+		const { transcript } = await fetchTranscript(id);
+
+		if (transcript.length < 1) {
+			return { error: 'Sorry! This video cannot be summarised' };
+		}
 
 		// Combine the transcript into a single string
 		const transcriptString = transcript.map((t) => t.text).join(' ');
