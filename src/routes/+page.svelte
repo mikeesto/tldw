@@ -12,7 +12,7 @@
 
 <div class="min-h-screen flex flex-col">
 	<header class="bg-gray-900 text-white py-4 px-4">
-		<h1 class="text-lg font-bold">YT Summariser</h1>
+		<a class="text-lg font-bold" href="/">YT Summariser</a>
 	</header>
 
 	{#if !form.summary}
