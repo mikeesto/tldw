@@ -44,13 +44,15 @@
 				target="_blank"
 				href={`https://youtube.com/watch?v=${form.id}`}>{form.title}</a
 			>
+			<div class="bg-yellow-200 inline-block p-1 mb-2">This video has been summarised using AI</div>
 			<p>{form.summary}</p>
 			<a
-				class="mt-5 inline-block bg-blue-500 hover:bg-blue-600 text-white py-2 px-2 rounded"
+				class="mt-5 inline-block bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded"
 				href="/">← Summarise another video</a
 			>
 		</main>
 	{/if}
+
 	<footer>
 		<div class="bg-gray-900 text-white py-4">
 			<p class="text-center">
