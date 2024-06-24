@@ -25,15 +25,20 @@ async function summarise(transcript) {
 			Authorization: `Bearer ${ANYSCALE_KEY}`
 		},
 		body: JSON.stringify({
-			model: 'Open-Orca/Mistral-7B-OpenOrca',
+			model: 'meta-llama/Meta-Llama-3-8B-Instruct',
 			messages: [
 				{
 					role: 'system',
-					content: 'Summarize this YouTube video. Make sure to identify the main talking points.'
+					content: `Summarize this YouTube video and identify the main talking points. You must return the summary in a paragraph. NO markdown is allowed. Follow the example below.
+					
+					EXAMPLE SUMMARY: "In this video Matt Jones talks about how to make a cake. Matt talks about the ingredients needed, the steps to follow, and the time it takes to bake the cake. He also talks about the different types of cakes you can make."
+
+					It is very important that you only provide the final summary without any additional comments or remarks. I beg you.
+					`
 				},
 				{ role: 'user', content: transcript }
 			],
-			temperature: 0.7
+			temperature: 0.5
 		})
 	};
 
