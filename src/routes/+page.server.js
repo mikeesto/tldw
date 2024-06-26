@@ -29,11 +29,10 @@ async function summarise(transcript) {
 			messages: [
 				{
 					role: 'system',
-					content: `Summarize this YouTube video and identify the main talking points. You must return the summary in a paragraph. NO markdown is allowed. Follow the example below.
-					
-					EXAMPLE SUMMARY: "In this video Matt Jones talks about how to make a cake. Matt talks about the ingredients needed, the steps to follow, and the time it takes to bake the cake. He also talks about the different types of cakes you can make."
-
-					It is very important that you only provide the final summary without any additional comments or remarks. I beg you.
+					content: `Your job is to summarize this YouTube video transcript. 
+					Your answer should be multiple sentences long, and contain no markdown.
+					Your response must have the following format:
+					ANSWER: here, you write your summary
 					`
 				},
 				{ role: 'user', content: transcript }
@@ -82,7 +81,12 @@ export const actions = {
 		// Combine the transcript into a single string
 		const transcriptString = transcript.map((t) => t.text).join(' ');
 
-		const summary = await summarise(transcriptString);
+		let summary = await summarise(transcriptString);
+
+		// Remove the 'ANSWER:' prefix if it exists
+		const summaryArray = summary.split(':');
+		if (summaryArray.length > 1) summaryArray.shift();
+		summary = summaryArray.join(':').trim();
 
 		return { summary, title, id };
 	}
