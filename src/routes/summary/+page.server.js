@@ -1,6 +1,13 @@
 import { fetchTranscript } from 'youtube-subtitle-transcript';
 import { ANYSCALE_KEY, YOUTUBE_KEY } from '$env/static/private';
-import { iso8601ToSeconds } from '$lib';
+import { iso8601ToSeconds, trimLLMResponse } from '$lib';
+import { redirect } from '@sveltejs/kit';
+
+export async function load({ request }) {
+	if (request.method !== 'POST') {
+		throw redirect(303, '/');
+	}
+}
 
 async function getVideoDetails(id) {
 	return fetch(
@@ -72,6 +79,11 @@ export const actions = {
 			return { error: 'Sorry! I only support videos under 30 minutes long' };
 		}
 
+		// Check if video title begins with 'what', 'how' or 'why'
+		const titleArray = title.toLowerCase().split(' ');
+		const firstWord = titleArray[0];
+		const question = ['what', 'how', 'why'].includes(firstWord);
+
 		const { transcript } = await fetchTranscript(id);
 
 		if (transcript.length < 1) {
@@ -82,12 +94,8 @@ export const actions = {
 		const transcriptString = transcript.map((t) => t.text).join(' ');
 
 		let summary = await summarise(transcriptString);
+		summary = trimLLMResponse(summary);
 
-		// Remove the 'ANSWER:' prefix if it exists
-		const summaryArray = summary.split(':');
-		if (summaryArray.length > 1) summaryArray.shift();
-		summary = summaryArray.join(':').trim();
-
-		return { summary, title, id };
+		return { summary, title, id, question };
 	}
 };
