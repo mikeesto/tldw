@@ -1,5 +1,5 @@
 import { fetchTranscript } from 'youtube-subtitle-transcript';
-import { ANYSCALE_KEY } from '$env/static/private';
+import { OPENROUTER_API_KEY } from '$env/static/private';
 import { trimLLMResponse } from '$lib';
 import { redirect } from '@sveltejs/kit';
 
@@ -15,10 +15,10 @@ async function getAnswer(transcript, title) {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${ANYSCALE_KEY}`
+			Authorization: `Bearer ${OPENROUTER_API_KEY}`
 		},
 		body: JSON.stringify({
-			model: 'meta-llama/Meta-Llama-3-8B-Instruct',
+			model: 'meta-llama/llama-3-8b-instruct:free',
 			messages: [
 				{
 					role: 'system',
@@ -34,7 +34,7 @@ async function getAnswer(transcript, title) {
 		})
 	};
 
-	return fetch('https://api.endpoints.anyscale.com/v1/chat/completions', requestOptions)
+	return fetch('https://openrouter.ai/api/v1/chat/completions', requestOptions)
 		.then((response) => response.json())
 		.then((data) => data.choices[0].message.content)
 		.catch((error) => console.error('Error:', error));
