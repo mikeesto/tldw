@@ -1,27 +1,11 @@
-import { fetchTranscript } from 'youtube-subtitle-transcript';
-import { OPENROUTER_API_KEY, YOUTUBE_KEY } from '$env/static/private';
-import { iso8601ToSeconds, trimLLMResponse } from '$lib';
+import { OPENROUTER_API_KEY, RAPID_API_KEY } from '$env/static/private';
+import { trimLLMResponse } from '$lib';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ request }) {
 	if (request.method !== 'POST') {
 		throw redirect(303, '/');
 	}
-}
-
-async function getVideoDetails(id) {
-	return fetch(
-		`https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails&id=${id}&key=${YOUTUBE_KEY}`
-	)
-		.then((response) => response.json())
-		.then((data) => {
-			const video = data.items[0];
-			if (!video) return { error: 'Sorry! I could not find that video' };
-
-			const title = video.snippet.title;
-			const duration = iso8601ToSeconds(video.contentDetails.duration);
-			return { title, duration };
-		});
 }
 
 async function summarise(transcript) {
@@ -70,32 +54,51 @@ export const actions = {
 			return { error: "Sorry! I don't know how to handle that URL" };
 		}
 
-		const { title, duration, error } = await getVideoDetails(id);
+		const rapidVideoDetailsURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${id}`;
+		const options = {
+			method: 'GET',
+			headers: {
+				'x-rapidapi-key': RAPID_API_KEY,
+				'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com'
+			}
+		};
 
-		if (error) return { error };
+		const response = await fetch(rapidVideoDetailsURL, options).then((res) => res.json());
+
+		if (!response.status) {
+			return { error: 'Sorry! I could not find that video' };
+		}
+
+		const { title, lengthSeconds, subtitles } = response;
 
 		// Don't allow durations over 30 minutes
-		if (duration >= 1800) {
+		if (lengthSeconds >= 1800) {
 			return { error: 'Sorry! I only support videos under 30 minutes long' };
 		}
+
+		// Check subtitles url
+		if (subtitles.length === 0) {
+			return { error: 'Sorry! This video cannot be summarised' };
+		}
+
+		const subtitleURL = subtitles.items[0].url;
+
+		const rapidSubtitlesURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/subtitles?subtitleUrl=${encodeURIComponent(
+			subtitleURL
+		)}&format=json`;
+
+		const subtitlesJSON = await fetch(rapidSubtitlesURL, options).then((res) => res.json());
+
+		const transcript = subtitlesJSON.map((t) => t.text).join(' ');
+
+		let summary = await summarise(transcript);
+		summary = trimLLMResponse(summary);
 
 		// Check if video title begins with 'what', 'how' or 'why'
 		const titleArray = title.toLowerCase().split(' ');
 		const firstWord = titleArray[0];
 		const question = ['what', 'how', 'why'].includes(firstWord);
 
-		const { transcript } = await fetchTranscript(id);
-
-		if (transcript.length < 1) {
-			return { error: 'Sorry! This video cannot be summarised' };
-		}
-
-		// Combine the transcript into a single string
-		const transcriptString = transcript.map((t) => t.text).join(' ');
-
-		let summary = await summarise(transcriptString);
-		summary = trimLLMResponse(summary);
-
-		return { summary, title, id, question };
+		return { summary, title, id, question, transcript };
 	}
 };

@@ -1,4 +1,3 @@
-import { fetchTranscript } from 'youtube-subtitle-transcript';
 import { OPENROUTER_API_KEY } from '$env/static/private';
 import { trimLLMResponse } from '$lib';
 import { redirect } from '@sveltejs/kit';
@@ -10,7 +9,6 @@ export async function load({ request }) {
 }
 
 async function getAnswer(transcript, title) {
-	console.log(transcript);
 	const requestOptions = {
 		method: 'POST',
 		headers: {
@@ -45,13 +43,9 @@ export const actions = {
 		const data = await request.formData();
 		const id = data.get('id');
 		const title = data.get('title');
+		const transcript = data.get('transcript');
 
-		const { transcript } = await fetchTranscript(id);
-
-		// Combine the transcript into a single string
-		const transcriptString = transcript.map((t) => t.text).join(' ');
-
-		let answer = await getAnswer(transcriptString, title);
+		let answer = await getAnswer(transcript, title);
 		answer = trimLLMResponse(answer);
 
 		return { title, answer, id };

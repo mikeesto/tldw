@@ -26,8 +26,5 @@
 		"tailwindcss": "^3.3.2",
 		"vite": "^5.0.3"
 	},
-	"type": "module",
-	"dependencies": {
-		"youtube-subtitle-transcript": "^0.1.0"
-	}
+	"type": "module"
 }

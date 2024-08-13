@@ -13,6 +13,7 @@
 		<form action="/question" method="POST">
 			<input type="hidden" name="id" value={form.id} />
 			<input type="hidden" name="title" value={form.title} />
+			<input type="hidden" name="transcript" value={form.transcript} />
 			<button type="submit" class="border-gray-200 border bg-blue-200 rounded-md p-2">
 				💡 Hmm, the video title asks: {form.title} . Would you like an answer?
 			</button>
