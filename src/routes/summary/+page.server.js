@@ -54,7 +54,7 @@ export const actions = {
 			return { error: "Sorry! I don't know how to handle that URL" };
 		}
 
-		const rapidVideoDetailsURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${id}`;
+		const rapidVideoDetailsURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${id}&urlAccess=blocked`;
 		const options = {
 			method: 'GET',
 			headers: {
