@@ -16,7 +16,7 @@ async function summarise(transcript) {
 			Authorization: `Bearer ${OPENROUTER_API_KEY}`
 		},
 		body: JSON.stringify({
-			model: 'meta-llama/llama-3.1-8b-instruct:free',
+			model: 'meta-llama/llama-3.3-8b-instruct:free',
 			messages: [
 				{
 					role: 'system',
@@ -32,73 +32,164 @@ async function summarise(transcript) {
 		})
 	};
 
-	return fetch('https://openrouter.ai/api/v1/chat/completions', requestOptions)
-		.then((response) => response.json())
-		.then((data) => data.choices[0].message.content)
-		.catch((error) => console.error('Error:', error));
+	try {
+		const response = await fetch('https://openrouter.ai/api/v1/chat/completions', requestOptions);
+
+		if (!response.ok) {
+			throw new Error(`OpenRouter API error: ${response.status}`);
+		}
+
+		const data = await response.json();
+
+		if (!data?.choices?.[0]?.message?.content) {
+			throw new Error('Invalid response structure from OpenRouter API');
+		}
+
+		return data.choices[0].message.content;
+	} catch (error) {
+		console.error('Error in summarise:', error);
+		throw new Error('Failed to generate summary');
+	}
+}
+
+function extractVideoId(url) {
+	try {
+		if (url.includes('youtu.be')) {
+			return url.split('/').pop().split('?')[0];
+		} else if (url.includes('youtube.com')) {
+			const youtubeUrl = new URL(url);
+			const params = new URLSearchParams(youtubeUrl.search);
+			const id = params.get('v');
+			if (!id) {
+				throw new Error('No video ID found');
+			}
+			return id;
+		}
+		throw new Error('Unsupported URL format');
+	} catch (error) {
+		throw new Error("Sorry! I don't know how to handle that URL");
+	}
 }
 
 export const actions = {
 	default: async ({ request }) => {
-		const data = await request.formData();
-		const url = data.get('url');
-		let id = '';
+		try {
+			const data = await request.formData();
+			const url = data.get('url');
 
-		if (url.includes('youtu.be')) {
-			id = url.split('/').pop().split('?')[0]; // Split on '/' and remove any query params
-		} else if (url.includes('youtube.com')) {
-			const youtubeUrl = new URL(url);
-			const params = new URLSearchParams(youtubeUrl.search);
-			id = params.get('v');
-		} else {
-			return { error: "Sorry! I don't know how to handle that URL" };
-		}
-
-		const rapidVideoDetailsURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${id}&urlAccess=blocked`;
-		const options = {
-			method: 'GET',
-			headers: {
-				'x-rapidapi-key': RAPID_API_KEY,
-				'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com'
+			if (!url || typeof url !== 'string') {
+				return { error: 'Please provide a valid URL' };
 			}
-		};
 
-		const response = await fetch(rapidVideoDetailsURL, options).then((res) => res.json());
+			// Extract video ID
+			let id;
+			try {
+				id = extractVideoId(url);
+			} catch (error) {
+				return { error: error.message };
+			}
 
-		if (!response.status) {
-			return { error: 'Sorry! I could not find that video' };
+			// Fetch video details
+			const rapidVideoDetailsURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${id}&urlAccess=blocked`;
+			const options = {
+				method: 'GET',
+				headers: {
+					'x-rapidapi-key': RAPID_API_KEY,
+					'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com'
+				}
+			};
+
+			const res = await fetch(rapidVideoDetailsURL, options);
+
+			if (!res.ok) {
+				console.error('RapidAPI video details error:', res.status, await res.text());
+				return { error: 'Sorry! I could not find that video' };
+			}
+
+			const response = await res.json();
+
+			if (!response || typeof response !== 'object') {
+				console.error('Invalid response from RapidAPI');
+				return { error: 'Received invalid data from video service' };
+			}
+
+			const { title, lengthSeconds, subtitles } = response;
+
+			// Validate required fields
+			if (!title) {
+				return { error: 'Could not retrieve video title' };
+			}
+
+			if (!lengthSeconds || isNaN(lengthSeconds)) {
+				return { error: 'Could not determine video length' };
+			}
+
+			// Don't allow durations over 30 minutes
+			if (lengthSeconds >= 1800) {
+				return { error: 'Sorry! I only support videos under 30 minutes long' };
+			}
+
+			// Validate subtitles
+			if (!subtitles || !Array.isArray(subtitles.items) || subtitles.items.length === 0) {
+				return { error: 'Sorry! This video has no subtitles available' };
+			}
+
+			const subtitleURL = subtitles.items[0]?.url;
+			if (!subtitleURL) {
+				return { error: 'Sorry! Could not access video subtitles' };
+			}
+
+			// Fetch subtitles
+			const rapidSubtitlesURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/subtitles?subtitleUrl=${encodeURIComponent(
+				subtitleURL
+			)}&format=json`;
+
+			const subtitlesRes = await fetch(rapidSubtitlesURL, options);
+
+			if (!subtitlesRes.ok) {
+				console.error('RapidAPI subtitles error:', subtitlesRes.status);
+				return { error: 'Failed to retrieve subtitles' };
+			}
+
+			const subtitlesJSON = await subtitlesRes.json();
+
+			// Validate subtitles data
+			if (!Array.isArray(subtitlesJSON) || subtitlesJSON.length === 0) {
+				return { error: 'No subtitle content available' };
+			}
+
+			const transcript = subtitlesJSON
+				.map((t) => t?.text || '')
+				.filter((text) => text.trim().length > 0)
+				.join(' ');
+
+			if (!transcript || transcript.trim().length === 0) {
+				return { error: 'Could not extract transcript from subtitles' };
+			}
+
+			// Generate summary
+			let summary;
+			try {
+				summary = await summarise(transcript);
+				summary = trimLLMResponse(summary);
+			} catch (error) {
+				console.error('Summarization error:', error);
+				return { error: 'Failed to generate summary. Please try again.' };
+			}
+
+			if (!summary || summary.trim().length === 0) {
+				return { error: 'Generated summary was empty. Please try again.' };
+			}
+
+			// Check if video title begins with 'what', 'how' or 'why'
+			const titleArray = title.toLowerCase().split(' ');
+			const firstWord = titleArray[0];
+			const question = ['what', 'how', 'why'].includes(firstWord);
+
+			return { summary, title, id, question, transcript };
+		} catch (error) {
+			console.error('Unexpected error in action:', error);
+			return { error: 'An unexpected error occurred. Please try again.' };
 		}
-
-		const { title, lengthSeconds, subtitles } = response;
-
-		// Don't allow durations over 30 minutes
-		if (lengthSeconds >= 1800) {
-			return { error: 'Sorry! I only support videos under 30 minutes long' };
-		}
-
-		// Check subtitles url
-		if (subtitles.length === 0) {
-			return { error: 'Sorry! This video cannot be summarised' };
-		}
-
-		const subtitleURL = subtitles.items[0].url;
-
-		const rapidSubtitlesURL = `https://youtube-media-downloader.p.rapidapi.com/v2/video/subtitles?subtitleUrl=${encodeURIComponent(
-			subtitleURL
-		)}&format=json`;
-
-		const subtitlesJSON = await fetch(rapidSubtitlesURL, options).then((res) => res.json());
-
-		const transcript = subtitlesJSON.map((t) => t.text).join(' ');
-
-		let summary = await summarise(transcript);
-		summary = trimLLMResponse(summary);
-
-		// Check if video title begins with 'what', 'how' or 'why'
-		const titleArray = title.toLowerCase().split(' ');
-		const firstWord = titleArray[0];
-		const question = ['what', 'how', 'why'].includes(firstWord);
-
-		return { summary, title, id, question, transcript };
 	}
 };
