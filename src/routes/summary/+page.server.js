@@ -16,7 +16,7 @@ async function summarise(transcript) {
 			Authorization: `Bearer ${OPENROUTER_API_KEY}`
 		},
 		body: JSON.stringify({
-			model: 'meta-llama/llama-3.3-8b-instruct:free',
+			model: 'openai/gpt-oss-20b:free',
 			messages: [
 				{
 					role: 'system',
