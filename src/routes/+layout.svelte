@@ -10,7 +10,7 @@
 	<footer>
 		<div class="bg-gray-900 text-white py-4">
 			<p class="text-center">
-				<a class="text-white hover:text-blue-400" href="https://mikeesto.com">@mikeesto</a>
+				by <a class="text-white hover:text-blue-400" href="https://mikeesto.com">@mikeesto</a>
 			</p>
 		</div>
 	</footer>

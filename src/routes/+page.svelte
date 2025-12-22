@@ -11,7 +11,7 @@
 </script>
 
 <main class="flex flex-col justify-center items-center flex-grow p-4">
-	<h1 class="text-2xl mb-6 text-gray-700 text-center">Summarise YouTube videos with AI</h1>
+	<h1 class="text-2xl mb-6 text-gray-700 text-center">Summarise a YouTube video</h1>
 	<form
 		class="flex flex-col sm:flex-row gap-2"
 		method="post"
