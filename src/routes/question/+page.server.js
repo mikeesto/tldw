@@ -16,7 +16,7 @@ async function getAnswer(transcript, title) {
 			Authorization: `Bearer ${OPENROUTER_API_KEY}`
 		},
 		body: JSON.stringify({
-			model: 'openai/gpt-oss-20b:free',
+			model: 'xiaomi/mimo-v2-flash:free',
 			messages: [
 				{
 					role: 'system',
