@@ -13,10 +13,12 @@ async function getAnswer(transcript, title) {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
-			Authorization: `Bearer ${OPENROUTER_API_KEY}`
+			Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+			'X-Title': 'Media Summariser',
+			'HTTP-Referer': 'https://yt-summary.vercel.app/'
 		},
 		body: JSON.stringify({
-			model: 'xiaomi/mimo-v2-flash:free',
+			model: 'openai/gpt-oss-120b:free',
 			messages: [
 				{
 					role: 'system',
