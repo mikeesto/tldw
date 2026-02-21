@@ -18,7 +18,7 @@ async function summarise(transcript) {
 			'HTTP-Referer': 'https://yt-summary.vercel.app/'
 		},
 		body: JSON.stringify({
-			model: 'openai/gpt-oss-120b:free',
+			model: 'openrouter/free',
 			messages: [
 				{
 					role: 'system',
