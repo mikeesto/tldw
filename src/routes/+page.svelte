@@ -17,12 +17,14 @@
 		method="post"
 		action="/summary"
 		on:submit={handleSubmit}
+		autocomplete="off"
 	>
 		<input
 			class="px-4 w-96 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:shadow-md"
 			type="text"
 			placeholder="Paste YouTube URL here"
 			name="url"
+			autocomplete="off"
 		/>
 		<button
 			type="submit"
