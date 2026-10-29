@@ -126,9 +126,9 @@ export const actions = {
 				return { error: 'Could not determine video length' };
 			}
 
-			// Don't allow durations over 30 minutes
-			if (lengthSeconds >= 1800) {
-				return { error: 'Sorry! I only support videos under 30 minutes long' };
+			// Don't allow durations over 60 minutes
+			if (lengthSeconds >= 3600) {
+				return { title, id, error: 'Only videos under 60 minutes long are supported. Sorry!' };
 			}
 
 			// Validate subtitles
