@@ -26,10 +26,16 @@
 		/>
 		<button
 			type="submit"
-			class="px-4 py-2 rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-600 disabled:bg-gray-500"
+			class="px-4 py-2 w-28 shrink-0 h-10 inline-flex items-center justify-center rounded-lg bg-blue-500 text-white font-bold hover:bg-blue-600 disabled:bg-gray-500"
 			disabled={isLoading}
 		>
-			Summarise
+			{#if isLoading}
+				<span
+					class="block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+				/>
+			{:else}
+				Summarise
+			{/if}
 		</button>
 	</form>
 	{#if form.error}
