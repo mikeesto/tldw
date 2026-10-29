@@ -3,9 +3,7 @@
 </script>
 
 <div class="min-h-screen flex flex-col">
-	<header class="bg-gray-900 text-white py-4 px-4">
-		<a class="text-lg font-bold" href="/">YT Summariser</a>
-	</header>
+	<header class="bg-gray-900 text-white py-4 px-4" />
 	<slot />
 	<footer>
 		<div class="bg-gray-900 text-white py-4">
