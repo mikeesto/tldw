@@ -23,6 +23,7 @@ async function summarise(transcript) {
 					role: 'system',
 					content: `Your job is to summarize this YouTube video transcript. 
 					Your answer should be multiple sentences long, and contain no markdown.
+					Write the summary entirely in English, regardless of the transcript's language.
 					Your response should contain the summary only.
 					`
 				},
