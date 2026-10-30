@@ -1,5 +1,4 @@
 import { OPENROUTER_API_KEY, RAPID_API_KEY } from '$env/static/private';
-import { trimLLMResponse } from '$lib';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ request }) {
@@ -24,8 +23,7 @@ async function summarise(transcript) {
 					role: 'system',
 					content: `Your job is to summarize this YouTube video transcript. 
 					Your answer should be multiple sentences long, and contain no markdown.
-					Your response must have the following format:
-					ANSWER: here, you write your summary
+					Your response should contain the summary only.
 					`
 				},
 				{ role: 'user', content: transcript }
@@ -47,7 +45,10 @@ async function summarise(transcript) {
 			throw new Error('Invalid response structure from OpenRouter API');
 		}
 
-		return data.choices[0].message.content;
+		return {
+			summary: data.choices[0].message.content,
+			model: data.model.split(':')[0] // only include model name
+		};
 	} catch (error) {
 		console.error('Error in summarise:', error);
 		throw new Error('Failed to generate summary');
@@ -170,14 +171,7 @@ export const actions = {
 			}
 
 			// Generate summary
-			let summary;
-			try {
-				summary = await summarise(transcript);
-				summary = trimLLMResponse(summary);
-			} catch (error) {
-				console.error('Summarization error:', error);
-				return { error: 'Failed to generate summary. Please try again.' };
-			}
+			const { summary, model } = await summarise(transcript);
 
 			if (!summary || summary.trim().length === 0) {
 				return { error: 'Generated summary was empty. Please try again.' };
@@ -188,7 +182,7 @@ export const actions = {
 			const firstWord = titleArray[0];
 			const question = ['what', 'how', 'why'].includes(firstWord);
 
-			return { summary, title, id, question, transcript };
+			return { summary, title, id, question, transcript, model };
 		} catch (error) {
 			console.error('Unexpected error in action:', error);
 			return { error: 'An unexpected error occurred. Please try again.' };

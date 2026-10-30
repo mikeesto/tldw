@@ -3,7 +3,7 @@
 	$: form = form;
 </script>
 
-<main class="p-4 flex-grow max-w-[1000px] m-auto">
+<main class="p-4 flex flex-col flex-grow max-w-[1000px] m-auto">
 	<a
 		class="text-blue-700 underline text-2xl mb-4 block"
 		target="_blank"
@@ -35,7 +35,14 @@
 			</div>
 		{/if}
 	</div>
-	<a class=" bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mt-3 inline-block" href="/">
+	<a
+		class=" bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mt-3 inline-block self-start"
+		href="/"
+	>
 		← Summarise another video
 	</a>
+
+	{#if form.model}
+		<p class="mt-auto self-center text-sm">{form.model}</p>
+	{/if}
 </main>
