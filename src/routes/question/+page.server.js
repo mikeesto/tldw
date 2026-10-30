@@ -1,5 +1,4 @@
 import { OPENROUTER_API_KEY } from '$env/static/private';
-import { trimLLMResponse } from '$lib';
 import { redirect } from '@sveltejs/kit';
 
 export async function load({ request }) {
@@ -22,10 +21,10 @@ async function getAnswer(transcript, title) {
 			messages: [
 				{
 					role: 'system',
-					content: `Your job is to answer the question as best as you can based only on the transcript. 
+					content: `Your job is to answer the question as best as you can based only on the transcript.  
 					Your answer should be multiple sentences long, and contain no markdown.
-					Your response must have the following format:
-					ANSWER: here, you write your answer
+					Write the answer entirely in English, regardless of the transcript's language.
+					Your response should contain the answer only.
 					`
 				},
 				{ role: 'user', content: `QUESTION: ${title}? \n TRANSCRIPT: ${transcript}` }
@@ -47,8 +46,7 @@ export const actions = {
 		const title = data.get('title');
 		const transcript = data.get('transcript');
 
-		let answer = await getAnswer(transcript, title);
-		answer = trimLLMResponse(answer);
+		const answer = await getAnswer(transcript, title);
 
 		return { title, answer, id };
 	}
