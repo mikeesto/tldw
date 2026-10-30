@@ -2,6 +2,9 @@
 	"name": "media-summariser",
 	"version": "0.0.1",
 	"private": true,
+	"engines": {
+		"node": "24.x"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -10,7 +13,7 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-vercel": "^6.3.4",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"autoprefixer": "^10.4.14",
