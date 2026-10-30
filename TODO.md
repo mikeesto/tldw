@@ -1,1 +1,0 @@
-- Group by 5/10 minute intervals? If so, adjust model prompt if the transcript is a part of the video. Otherwise, it thinks that it is the end of the video
